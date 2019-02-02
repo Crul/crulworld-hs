@@ -1,5 +1,5 @@
 {-# LANGUAGE ExtendedDefaultRules #-}
-module Lib (someFunc) where
+module Simulation (runSimulation) where
 
 import Conduit
 import Data.List
@@ -55,8 +55,8 @@ runTimeSteps w = w : runTimeSteps (runTimeStep w)
     runTimeSteps w xs = runTimeSteps (runTimeStep w) (xs ++ [w])
 -}
 
-someFunc :: IO ()
-someFunc = do
+runSimulation :: IO ()
+runSimulation = do
   runConduit
     $ yieldMany (
       runTimeSteps (
