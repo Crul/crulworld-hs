@@ -7,18 +7,9 @@ import Data.List
 beginningOfTime = 1
 endOfTime = 10
 
-data WorldData = WorldData { _time :: Int, _agents :: [AgentData] } deriving (Show)
-getTime   (WorldData t _) = t
-getAgents (WorldData _ a) = a
-
-data AgentData = AgentData { _agentId :: Int, _counter :: Int, _xPos :: Int, _yPos :: Int } deriving (Show)
-getCounter (AgentData _ c _ _) = c
-getXPos    (AgentData _ _ x _) = x
-getYPos    (AgentData _ _ _ y) = y
-
-data MoveActionData = MoveActionData { _xMove :: Int, _yMove :: Int } deriving (Show)
-getXMove (MoveActionData x _) = x
-getYMove (MoveActionData _ y) = y
+data WorldData = WorldData { time :: Int, agents :: [AgentData] } deriving (Show)
+data AgentData = AgentData { agentId :: Int, counter :: Int, xPos :: Int, yPos :: Int } deriving (Show)
+data MoveActionData = MoveActionData { xMove :: Int, yMove :: Int } deriving (Show)
 
 runTimeSteps :: WorldData -> [WorldData]
 runTimeSteps w@(WorldData t _) | t == endOfTime = [w]
@@ -35,14 +26,14 @@ runTimeSteps w = w : runTimeSteps (runTimeStep w)
 
 runTimeStep :: WorldData -> WorldData
 runTimeStep w = do
-  let t = succ $ getTime w
-  let agsAndMvs = map runAgentStep (getAgents w)
+  let t = succ $ time w
+  let agsAndMvs = map runAgentStep (agents w)
   let ags = map runMoveAction agsAndMvs
-  w { _time = t, _agents = ags }
+  w { time = t, agents = ags }
 
 runAgentStep :: AgentData -> (AgentData, MoveActionData)
 runAgentStep a = do
-  let nextA = a { _counter = succ $ getCounter a }
+  let nextA = a { counter = succ $ counter a }
   let m = MoveActionData 1 1
   ( nextA, m )
 
@@ -51,8 +42,8 @@ runMoveAction agAndMv = do
   let a = fst agAndMv
   let m = snd agAndMv
   a {
-    _xPos = (getXPos a) + (getXMove m),
-    _yPos = (getYPos a) + (getYMove m)
+    xPos = (xPos a) + (xMove m),
+    yPos = (yPos a) + (yMove m)
   }
 
 runSimulation :: IO ()
