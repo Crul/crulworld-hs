@@ -20,6 +20,26 @@ data MoveActionData = MoveActionData { _xMove :: Int, _yMove :: Int } deriving (
 getXMove (MoveActionData x _) = x
 getYMove (MoveActionData _ y) = y
 
+runTimeSteps :: WorldData -> [WorldData]
+runTimeSteps w@(WorldData t _) | t == endOfTime = [w]
+runTimeSteps w = w : runTimeSteps (runTimeStep w)
+{-  WRONG !!!
+    runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
+    runTimeSteps w@(WorldData t) xs | t == endOfTime = w:xs
+    runTimeSteps w xs = runTimeSteps (runTimeStep w) (w:xs)
+    WRONG !!!
+    runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
+    runTimeSteps w@(WorldData t) xs | t == endOfTime = xs ++ [w]
+    runTimeSteps w xs = runTimeSteps (runTimeStep w) (xs ++ [w])
+-}
+
+runTimeStep :: WorldData -> WorldData
+runTimeStep w = do
+  let t = succ $ getTime w
+  let agsAndMvs = map runAgentStep (getAgents w)
+  let ags = map runMoveAction agsAndMvs
+  w { _time = t, _agents = ags }
+
 runAgentStep :: AgentData -> (AgentData, MoveActionData)
 runAgentStep a = do
   let nextA = a { _counter = succ $ getCounter a }
@@ -34,26 +54,6 @@ runMoveAction agAndMv = do
     _xPos = (getXPos a) + (getXMove m),
     _yPos = (getYPos a) + (getYMove m)
   }
-
-runTimeStep :: WorldData -> WorldData
-runTimeStep w = do
-  let t = succ $ getTime w
-  let agsAndMvs = map runAgentStep (getAgents w)
-  let ags = map runMoveAction agsAndMvs
-  w { _time = t, _agents = ags }
-
-runTimeSteps :: WorldData -> [WorldData]
-runTimeSteps w@(WorldData t _) | t == endOfTime = [w]
-runTimeSteps w = w : runTimeSteps (runTimeStep w)
-{-  WRONG !!!
-    runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
-    runTimeSteps w@(WorldData t) xs | t == endOfTime = w:xs
-    runTimeSteps w xs = runTimeSteps (runTimeStep w) (w:xs)
-    WRONG !!!
-    runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
-    runTimeSteps w@(WorldData t) xs | t == endOfTime = xs ++ [w]
-    runTimeSteps w xs = runTimeSteps (runTimeStep w) (xs ++ [w])
--}
 
 runSimulation :: IO ()
 runSimulation = do
