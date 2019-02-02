@@ -5,14 +5,16 @@ import Conduit
 import Data.List
 
 beginningOfTime = 1
-endOfTime = 10
+endOfTime       = 9
+agentsSpeed     = 1.5  -- TODO make speed work properly (now it applies to x,y not to the real move)
 
-data WorldData = WorldData { time :: Int, agents :: [AgentData] } deriving (Show)
-data AgentData = AgentData { agentId :: Int, counter :: Int, xPos :: Int, yPos :: Int } deriving (Show)
-data MoveActionData = MoveActionData { xMove :: Int, yMove :: Int } deriving (Show)
+data WorldData  = WorldData  { time     :: Int,   agents  :: [AgentData], objects :: [ObjectData] } deriving (Show)
+data ObjectData = ObjectData { objectId :: Int,   xObjPos :: Float, yObjPos :: Float } deriving (Show)
+data AgentData  = AgentData  { agentId  :: Int,   xAgPos  :: Float, yAgPos  :: Float } deriving (Show)
+data MoveData   = MoveData   { xMove    :: Float, yMove   :: Float }
 
 runTimeSteps :: WorldData -> [WorldData]
-runTimeSteps w@(WorldData t _) | t == endOfTime = [w]
+runTimeSteps w@(WorldData t _ _) | t == endOfTime = [w]
 runTimeSteps w = w : runTimeSteps (runTimeStep w)
 {-  WRONG !!!
     runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
@@ -26,24 +28,43 @@ runTimeSteps w = w : runTimeSteps (runTimeStep w)
 
 runTimeStep :: WorldData -> WorldData
 runTimeStep w = do
-  let t = succ $ time w
-  let agsAndMvs = map runAgentStep (agents w)
-  let ags = map runMoveAction agsAndMvs
+  let t         = succ $ time w
+  let agsAndMvs = map (runAgentStep w) (agents w)
+  let ags       = map runMoveAction agsAndMvs
   w { time = t, agents = ags }
 
-runAgentStep :: AgentData -> (AgentData, MoveActionData)
-runAgentStep a = do
-  let nextA = a { counter = succ $ counter a }
-  let m = MoveActionData 1 1
-  ( nextA, m )
+sense :: AgentData -> WorldData -> [ObjectData]
+sense _ w = objects w  -- TODO filter objects based on agent position and vision-range parameter
 
-runMoveAction :: (AgentData, MoveActionData) -> AgentData
+runAgentStep :: WorldData -> AgentData -> (AgentData, MoveData)
+runAgentStep w a = do
+  let objs = sense a w
+  let trgt = head objs
+  let mvTw = moveTowards a trgt
+  let mv   = MoveData (fst mvTw) (snd mvTw)
+  let nxtA = a
+  ( nxtA, mv )
+
+moveTowards :: AgentData -> ObjectData -> (Float, Float)
+moveTowards ag ob = do
+  let moveAgTowardsOb = moveTowardsComp ag ob
+  let xMv = moveAgTowardsOb xAgPos xObjPos
+  let yMv = moveAgTowardsOb yAgPos yObjPos
+  ( xMv, yMv )
+
+moveTowardsComp :: AgentData -> ObjectData -> (AgentData -> Float) -> (ObjectData -> Float) -> Float
+moveTowardsComp ag ob agPFn obPFn
+  | dst < agentsSpeed = dst
+  | otherwise = agentsSpeed * (dst / abs dst)
+  where dst = (obPFn ob) - (agPFn ag)
+
+runMoveAction :: (AgentData, MoveData) -> AgentData
 runMoveAction agAndMv = do
   let a = fst agAndMv
   let m = snd agAndMv
   a {
-    xPos = (xPos a) + (xMove m),
-    yPos = (yPos a) + (yMove m)
+    xAgPos = (xAgPos a) + (xMove m),
+    yAgPos = (yAgPos a) + (yMove m)
   }
 
 runSimulation :: IO ()
@@ -52,7 +73,8 @@ runSimulation = do
     $ yieldMany (
       runTimeSteps (
         WorldData beginningOfTime 
-        [AgentData 0 beginningOfTime 0 0]
+        [AgentData  1 0 0]
+        [ObjectData 1 8 8]
       )
     )
     .| mapM_C print
