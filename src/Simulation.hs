@@ -1,12 +1,10 @@
-{-# LANGUAGE ExtendedDefaultRules #-}
 module Simulation (runSimulation) where
-
-import Conduit
-import Data.List
 
 beginningOfTime = 1
 endOfTime       = 9
 agentsSpeed     = 1.5  -- TODO make speed work properly (now it applies to x,y not to the real move)
+
+type Time = Int
 
 data WorldData = WorldData {
   time    :: Int,
@@ -42,27 +40,12 @@ data MoveData = MoveData {
   yMove :: Float
 }
 
-runTimeSteps :: WorldData -> [WorldData]
-runTimeSteps w
-  | time w == endOfTime = [w]
-  | otherwise           = w : runTimeSteps (runTimeStep w)
-{-  WRONG !!!
-    runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
-    runTimeSteps w@(WorldData t) xs | t == endOfTime = w:xs
-    runTimeSteps w xs = runTimeSteps (runTimeStep w) (w:xs)
-    WRONG !!!
-    runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
-    runTimeSteps w@(WorldData t) xs | t == endOfTime = xs ++ [w]
-    runTimeSteps w xs = runTimeSteps (runTimeStep w) (xs ++ [w])
--}
-
 runTimeStep :: WorldData -> WorldData
 runTimeStep w = w { time = t, agents = ags }
   where
     t         = succ $ time w
     agsAndMvs = map (runAgentStep w) (agents w)
     ags       = map runMoveAction agsAndMvs
-  
 
 senseObjs :: AgentData -> WorldData -> [ObjectData]
 senseObjs _ w = objects w  -- TODO filter objects based on agent position and vision-range parameter
@@ -82,7 +65,6 @@ runPreyStep w a = ( nxtA, mv )
     mvTw = moveTowardsObj a trgt
     mv   = MoveData (fst mvTw) (snd mvTw)
     nxtA = a
-    
 
 runHunterStep :: WorldData -> AgentData -> (AgentData, MoveData)
 runHunterStep w a = ( nxtA, mv )
@@ -92,7 +74,6 @@ runHunterStep w a = ( nxtA, mv )
     mvTw = moveTowardsAg a trgt
     mv   = MoveData (fst mvTw) (snd mvTw)
     nxtA = a
-    
 
 moveTowardsObj :: AgentData -> ObjectData -> (Float, Float)
 moveTowardsObj ag ob = ( xMv, yMv )
@@ -100,12 +81,11 @@ moveTowardsObj ag ob = ( xMv, yMv )
     moveAgTowardsOb = moveTowardsObjComp ag ob
     xMv = moveAgTowardsOb xAgPos xObjPos
     yMv = moveAgTowardsOb yAgPos yObjPos
-  
-
 moveTowardsObjComp :: AgentData -> ObjectData -> (AgentData -> Float) -> (ObjectData -> Float) -> Float
-moveTowardsObjComp ag ob agPFn obPFn
-  | (abs dst) < agentsSpeed = dst
-  | otherwise         = agentsSpeed * (dst / abs dst)
+moveTowardsObjComp ag ob agPFn obPFn =
+  if (abs dst) < agentsSpeed
+    then dst
+    else agentsSpeed * (dst / abs dst)
   where dst = (obPFn ob) - (agPFn ag)
 
 moveTowardsAg :: AgentData -> AgentData -> (Float, Float)
@@ -114,35 +94,33 @@ moveTowardsAg ag trgt = ( xMv, yMv )
     moveAgTowardsAg = moveTowardsAgComp ag trgt
     xMv = moveAgTowardsAg xAgPos
     yMv = moveAgTowardsAg yAgPos
-  
 
 moveTowardsAgComp :: AgentData -> AgentData -> (AgentData -> Float) -> Float
-moveTowardsAgComp ag trgt agPFn
-  | (abs dst) < agentsSpeed = dst
-  | otherwise         = agentsSpeed * (dst / abs dst)
+moveTowardsAgComp ag trgt agPFn =
+  if (abs dst) < agentsSpeed
+    then dst
+    else agentsSpeed * (dst / abs dst)
   where dst = (agPFn trgt) - (agPFn ag)
 
 runMoveAction :: (AgentData, MoveData) -> AgentData
-runMoveAction agAndMv = a {
+runMoveAction (a, m) = a {
     xAgPos = (xAgPos a) + (xMove m),
     yAgPos = (yAgPos a) + (yMove m)
   }
-  where
-    a = fst agAndMv
-    m = snd agAndMv
-  
+
+initialWorld :: WorldData
+initialWorld = WorldData beginningOfTime
+  [
+    (AgentData Prey   1 0 0),
+    (AgentData Hunter 1 4 0)
+  ]
+  [ObjectData 1 8 8]
+
+timeline :: [WorldData]
+timeline = iterate runTimeStep initialWorld
+
+runSimulationUpTo :: Time -> [WorldData]
+runSimulationUpTo i = takeWhile (\x -> time x <= i) timeline
 
 runSimulation :: IO ()
-runSimulation = do
-  runConduit
-    $ yieldMany (
-      runTimeSteps (
-        WorldData beginningOfTime
-        [
-          (AgentData Prey   1 0 0),
-          (AgentData Hunter 1 4 0)
-        ]
-        [ObjectData 1 8 8]
-      )
-    )
-    .| mapM_C print
+runSimulation = mapM_ print (runSimulationUpTo 10)
