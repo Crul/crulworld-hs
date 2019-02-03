@@ -1,10 +1,10 @@
 module World (World (..), Time, senseAgents) where
 
-import Agents as Ags (Agent)
+import Agents (Agent)
 
 type Time = Int
+data World = World { time :: Int, agents :: [Agent] }
+instance Show World where show w = (show $ time w) ++ ": " ++ (show $ agents w)
 
-data World = World { time :: Int, agents :: [Ags.Agent] } deriving (Show)
-
-senseAgents :: World -> Ags.Agent -> [Ags.Agent]
+senseAgents :: World -> Agent -> [Agent]
 senseAgents w _ = agents w  -- TODO filter agents based on agent position and vision-range parameter

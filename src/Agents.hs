@@ -1,14 +1,27 @@
-module Agents (Agent (..), AgentType (..), updateAgent) where
+module Agents (Agent, makeFood, makePrey, makeHunter, moveAgent, updateAgent) where
 
-import Geometry as Geo (Position (..), Movement (..), Vector (..), getPosVector)
+import Geometry (Position, Movement, makePosition, makeMovement, getMovTowardsPos, applyMovement)
 
-agentsSpeed :: Float
+type Speed = Float
+agentsSpeed :: Speed
 agentsSpeed = 1.5  -- TODO make speed work properly (now it applies to x,y not to the real move)
 
 data AgentType = Prey | Hunter | Food deriving (Eq, Show)
-data Agent = Agent { agentType :: AgentType, agentId :: Int, agentPos :: Geo.Position }
+data Agent = Agent { agentType :: AgentType, agentId :: Int, agentPos :: Position }
 instance Show Agent where
-  show a = (show $ agentType a) ++ "[" ++ (show $ agentId a) ++ "]" ++ (show $ Geo.getPosVector $ agentPos a)
+  show a = (show $ agentType a) ++ "[" ++ (show $ agentId a) ++ "]" ++ (show $ agentPos a)
+
+makeFood :: Int -> Float -> Float -> Agent
+makeFood id x y = makeAgent Food id x y
+
+makePrey :: Int -> Float -> Float -> Agent
+makePrey id x y = makeAgent Prey id x y
+
+makeHunter :: Int -> Float -> Float -> Agent
+makeHunter id x y = makeAgent Hunter id x y
+
+makeAgent :: AgentType -> Int -> Float -> Float -> Agent
+makeAgent t id x y = Agent t id (makePosition x y)
 
 isFood :: Agent -> Bool
 isFood a = agentType a == Food
@@ -16,28 +29,24 @@ isFood a = agentType a == Food
 isPrey :: Agent -> Bool
 isPrey a = agentType a == Prey
 
-updateAgent :: [Agent] -> Agent -> (Agent, Geo.Movement)
-updateAgent ags a@(Agent Prey   _ _) = updateTowardsType isFood ags a
-updateAgent ags a@(Agent Hunter _ _) = updateTowardsType isPrey ags a
-updateAgent ags a@(Agent Food   _ _) = (a, Geo.Movement (Geo.Vector 0 0))  -- TODO Food shouldn't do actions
+moveAgent :: Agent -> Movement -> Agent
+moveAgent ag mv = ag { agentPos = newPos }
+  where newPos = applyMovement (agentPos ag) mv
 
-updateTowardsType :: (Agent -> Bool) -> [Agent] -> Agent -> (Agent, Geo.Movement)
-updateTowardsType tf ags a = ( nxtA, mv )
+updateAgent :: [Agent] -> Agent -> (Agent, Movement)
+updateAgent ags a@(Agent Prey   _ _) = moveTowardsType isFood ags a
+updateAgent ags a@(Agent Hunter _ _) = moveTowardsType isPrey ags a
+updateAgent ags a@(Agent Food   _ _) = (a, makeMovement 0 0)  -- TODO Food shouldn't do actions
+
+moveTowardsType :: (Agent -> Bool) -> [Agent] -> Agent -> (Agent, Movement)
+moveTowardsType tf ags a = ( nxtA, mv )
   where
     trgt = head $ filter tf ags
     mv   = moveTowardsAg a trgt
     nxtA = a
 
-moveTowardsAg :: Agent -> Agent -> Geo.Movement
-moveTowardsAg ag trgt = Geo.Movement $ Geo.Vector xMv yMv
+moveTowardsAg :: Agent -> Agent -> Movement
+moveTowardsAg ag trgt = getMovTowardsPos agPos trgtPos agentsSpeed
   where
-    moveAgTowardsAg = moveTowardsAgComp ag trgt
-    xMv = moveAgTowardsAg (x . Geo.getPosVector . agentPos)
-    yMv = moveAgTowardsAg (y . Geo.getPosVector . agentPos)
-
-moveTowardsAgComp :: Agent -> Agent -> (Agent -> Float) -> Float
-moveTowardsAgComp ag trgt agPFn =
-  if (abs dst) < agentsSpeed
-    then dst
-    else agentsSpeed * (dst / abs dst)
-  where dst = (agPFn trgt) - (agPFn ag)
+    agPos   = agentPos ag
+    trgtPos = agentPos trgt

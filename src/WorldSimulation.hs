@@ -1,23 +1,19 @@
 module WorldSimulation (updateWorld) where
 
-import Geometry as Geo (Position (..), Movement, getPosVector, getMovVector, vecAdd)
-import Agents  as Ags (Agent (..), updateAgent)
-import World   as Wrl (World (..), senseAgents)
+import Geometry (Movement)
+import Agents   (Agent, moveAgent, updateAgent)
+import World    (World (..), senseAgents)
 
 updateWorld :: World -> World
-updateWorld w = w { time = t, agents = ags }
+updateWorld w = w { time = newT, agents = ags }
   where
-    t         = succ $ time w
-    agsAndMvs = map (updateAgentInWorld w) (agents w)
-    ags       = map applyMovement agsAndMvs
+    newT      = succ $ time w
+    agsAndMvs = map (updateWorldAgent w) (agents w)
+    ags       = map moveWorldAgent agsAndMvs
 
-updateAgentInWorld :: World -> Agent -> (Agent, Movement)
-updateAgentInWorld w ag = Ags.updateAgent visibleAgs ag
-  where visibleAgs = Wrl.senseAgents w ag
+updateWorldAgent :: World -> Agent -> (Agent, Movement)
+updateWorldAgent w ag = updateAgent visibleAgs ag
+  where visibleAgs = senseAgents w ag
 
-applyMovement :: (Ags.Agent, Geo.Movement) -> Ags.Agent
-applyMovement (ag, mv) = ag { agentPos = newPos }
-  where
-    agPos   = Geo.getPosVector $ agentPos ag
-    trgtPos = Geo.getMovVector mv
-    newPos  = Geo.Position $ agPos `Geo.vecAdd` trgtPos
+moveWorldAgent :: (Agent, Movement) -> Agent
+moveWorldAgent (ag, mv) = moveAgent ag mv
