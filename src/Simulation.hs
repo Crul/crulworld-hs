@@ -43,8 +43,9 @@ data MoveData = MoveData {
 }
 
 runTimeSteps :: WorldData -> [WorldData]
-runTimeSteps w@(WorldData t _ _) | t == endOfTime = [w]
-runTimeSteps w = w : runTimeSteps (runTimeStep w)
+runTimeSteps w
+  | time w == endOfTime = [w]
+  | otherwise           = w : runTimeSteps (runTimeStep w)
 {-  WRONG !!!
     runTimeSteps :: WorldData -> [WorldData] -> [WorldData]
     runTimeSteps w@(WorldData t) xs | t == endOfTime = w:xs
@@ -56,11 +57,12 @@ runTimeSteps w = w : runTimeSteps (runTimeStep w)
 -}
 
 runTimeStep :: WorldData -> WorldData
-runTimeStep w = do
-  let t         = succ $ time w
-  let agsAndMvs = map (runAgentStep w) (agents w)
-  let ags       = map runMoveAction agsAndMvs
-  w { time = t, agents = ags }
+runTimeStep w = w { time = t, agents = ags }
+  where
+    t         = succ $ time w
+    agsAndMvs = map (runAgentStep w) (agents w)
+    ags       = map runMoveAction agsAndMvs
+  
 
 senseObjs :: AgentData -> WorldData -> [ObjectData]
 senseObjs _ w = objects w  -- TODO filter objects based on agent position and vision-range parameter
@@ -69,34 +71,36 @@ senseAgents :: AgentData -> WorldData -> [AgentData]
 senseAgents _ w = agents w  -- TODO filter agents based on agent position and vision-range parameter
 
 runAgentStep :: WorldData -> AgentData -> (AgentData, MoveData)
-runAgentStep w a@(AgentData t _ _ _)
-  | t == Prey   = runPreyStep w a
-  | t == Hunter = runHunterStep w a
+runAgentStep w a@(AgentData Prey   _ _ _) = runPreyStep   w a
+runAgentStep w a@(AgentData Hunter _ _ _) = runHunterStep w a
 
 runPreyStep :: WorldData -> AgentData -> (AgentData, MoveData)
-runPreyStep w a = do
-    let objs = senseObjs a w
-    let trgt = head objs
-    let mvTw = moveTowardsObj a trgt
-    let mv   = MoveData (fst mvTw) (snd mvTw)
-    let nxtA = a
-    ( nxtA, mv )
+runPreyStep w a = ( nxtA, mv )
+  where
+    objs = senseObjs a w
+    trgt = head objs
+    mvTw = moveTowardsObj a trgt
+    mv   = MoveData (fst mvTw) (snd mvTw)
+    nxtA = a
+    
 
 runHunterStep :: WorldData -> AgentData -> (AgentData, MoveData)
-runHunterStep w a = do
-    let ags  = senseAgents a w
-    let trgt = head ags
-    let mvTw = moveTowardsAg a trgt
-    let mv   = MoveData (fst mvTw) (snd mvTw)
-    let nxtA = a
-    ( nxtA, mv )
+runHunterStep w a = ( nxtA, mv )
+  where
+    ags  = senseAgents a w
+    trgt = head ags
+    mvTw = moveTowardsAg a trgt
+    mv   = MoveData (fst mvTw) (snd mvTw)
+    nxtA = a
+    
 
 moveTowardsObj :: AgentData -> ObjectData -> (Float, Float)
-moveTowardsObj ag ob = do
-  let moveAgTowardsOb = moveTowardsObjComp ag ob
-  let xMv = moveAgTowardsOb xAgPos xObjPos
-  let yMv = moveAgTowardsOb yAgPos yObjPos
-  ( xMv, yMv )
+moveTowardsObj ag ob = ( xMv, yMv )
+  where
+    moveAgTowardsOb = moveTowardsObjComp ag ob
+    xMv = moveAgTowardsOb xAgPos xObjPos
+    yMv = moveAgTowardsOb yAgPos yObjPos
+  
 
 moveTowardsObjComp :: AgentData -> ObjectData -> (AgentData -> Float) -> (ObjectData -> Float) -> Float
 moveTowardsObjComp ag ob agPFn obPFn
@@ -105,11 +109,12 @@ moveTowardsObjComp ag ob agPFn obPFn
   where dst = (obPFn ob) - (agPFn ag)
 
 moveTowardsAg :: AgentData -> AgentData -> (Float, Float)
-moveTowardsAg ag trgt = do
-  let moveAgTowardsAg = moveTowardsAgComp ag trgt
-  let xMv = moveAgTowardsAg xAgPos
-  let yMv = moveAgTowardsAg yAgPos
-  ( xMv, yMv )
+moveTowardsAg ag trgt = ( xMv, yMv )
+  where
+    moveAgTowardsAg = moveTowardsAgComp ag trgt
+    xMv = moveAgTowardsAg xAgPos
+    yMv = moveAgTowardsAg yAgPos
+  
 
 moveTowardsAgComp :: AgentData -> AgentData -> (AgentData -> Float) -> Float
 moveTowardsAgComp ag trgt agPFn
@@ -118,13 +123,14 @@ moveTowardsAgComp ag trgt agPFn
   where dst = (agPFn trgt) - (agPFn ag)
 
 runMoveAction :: (AgentData, MoveData) -> AgentData
-runMoveAction agAndMv = do
-  let a = fst agAndMv
-  let m = snd agAndMv
-  a {
+runMoveAction agAndMv = a {
     xAgPos = (xAgPos a) + (xMove m),
     yAgPos = (yAgPos a) + (yMove m)
   }
+  where
+    a = fst agAndMv
+    m = snd agAndMv
+  
 
 runSimulation :: IO ()
 runSimulation = do
