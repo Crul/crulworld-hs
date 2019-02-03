@@ -6,23 +6,8 @@ agentsSpeed     = 1.5  -- TODO make speed work properly (now it applies to x,y n
 
 type Time = Int
 
-data WorldData = WorldData {
-  time    :: Int,
-  agents  :: [AgentData],
-  objects :: [ObjectData]
-} deriving (Show)
-
-data ObjectData = ObjectData {
-  objectId :: Int,
-  xObjPos  :: Float,
-  yObjPos  :: Float
-}
-
-instance Show ObjectData where
-  show o = "Obj[" ++ (show $ objectId o) ++ "]"
-           ++ "(" ++ (show $ xObjPos o) ++ "," ++ (show $ yObjPos o) ++ ")"
-
-data AgentType  = Prey | Hunter deriving (Eq, Show)
+data WorldData = WorldData { time :: Int, agents :: [AgentData] } deriving (Show)
+data AgentType = Prey | Hunter | Food deriving (Eq, Show)
 data AgentData = AgentData {
   agentType :: AgentType,
   agentId   :: Int,
@@ -30,15 +15,18 @@ data AgentData = AgentData {
   yAgPos    :: Float
 }
 
+isFood :: AgentData -> Bool
+isFood a = agentType a == Food
+
+isPrey :: AgentData -> Bool
+isPrey a = agentType a == Prey
+
 instance Show AgentData where
   show a = (show $ agentType a)
            ++ "[" ++ (show $ agentId a) ++ "]"
            ++ "(" ++ (show $ xAgPos a) ++ "," ++ (show $ yAgPos a) ++ ")"
 
-data MoveData = MoveData {
-  xMove :: Float,
-  yMove :: Float
-}
+data MoveData = MoveData { xMove :: Float, yMove :: Float }
 
 runTimeStep :: WorldData -> WorldData
 runTimeStep w = w { time = t, agents = ags }
@@ -47,46 +35,22 @@ runTimeStep w = w { time = t, agents = ags }
     agsAndMvs = map (runAgentStep w) (agents w)
     ags       = map runMoveAction agsAndMvs
 
-senseObjs :: AgentData -> WorldData -> [ObjectData]
-senseObjs _ w = objects w  -- TODO filter objects based on agent position and vision-range parameter
-
 senseAgents :: AgentData -> WorldData -> [AgentData]
 senseAgents _ w = agents w  -- TODO filter agents based on agent position and vision-range parameter
 
 runAgentStep :: WorldData -> AgentData -> (AgentData, MoveData)
-runAgentStep w a@(AgentData Prey   _ _ _) = runPreyStep   w a
-runAgentStep w a@(AgentData Hunter _ _ _) = runHunterStep w a
+runAgentStep w a@(AgentData Prey   _ _ _) = runTowardsType isFood w a
+runAgentStep w a@(AgentData Hunter _ _ _) = runTowardsType isPrey w a
+runAgentStep w a@(AgentData Food   _ _ _) = (a, MoveData 0 0)  -- TODO Food shouldn't do actions
 
-runPreyStep :: WorldData -> AgentData -> (AgentData, MoveData)
-runPreyStep w a = ( nxtA, mv )
-  where
-    objs = senseObjs a w
-    trgt = head objs
-    mvTw = moveTowardsObj a trgt
-    mv   = MoveData (fst mvTw) (snd mvTw)
-    nxtA = a
-
-runHunterStep :: WorldData -> AgentData -> (AgentData, MoveData)
-runHunterStep w a = ( nxtA, mv )
+runTowardsType :: (AgentData -> Bool) -> WorldData -> AgentData -> (AgentData, MoveData)
+runTowardsType tf w a = ( nxtA, mv )
   where
     ags  = senseAgents a w
-    trgt = head ags
+    trgt = head $ filter tf ags
     mvTw = moveTowardsAg a trgt
     mv   = MoveData (fst mvTw) (snd mvTw)
     nxtA = a
-
-moveTowardsObj :: AgentData -> ObjectData -> (Float, Float)
-moveTowardsObj ag ob = ( xMv, yMv )
-  where
-    moveAgTowardsOb = moveTowardsObjComp ag ob
-    xMv = moveAgTowardsOb xAgPos xObjPos
-    yMv = moveAgTowardsOb yAgPos yObjPos
-moveTowardsObjComp :: AgentData -> ObjectData -> (AgentData -> Float) -> (ObjectData -> Float) -> Float
-moveTowardsObjComp ag ob agPFn obPFn =
-  if (abs dst) < agentsSpeed
-    then dst
-    else agentsSpeed * (dst / abs dst)
-  where dst = (obPFn ob) - (agPFn ag)
 
 moveTowardsAg :: AgentData -> AgentData -> (Float, Float)
 moveTowardsAg ag trgt = ( xMv, yMv )
@@ -111,10 +75,10 @@ runMoveAction (a, m) = a {
 initialWorld :: WorldData
 initialWorld = WorldData beginningOfTime
   [
+    (AgentData Food   1 8 8),
     (AgentData Prey   1 0 0),
     (AgentData Hunter 1 4 0)
   ]
-  [ObjectData 1 8 8]
 
 timeline :: [WorldData]
 timeline = iterate runTimeStep initialWorld
