@@ -34,9 +34,10 @@ moveAgent ag mv = ag { agentPos = newPos }
   where newPos = applyMovement (agentPos ag) mv
 
 updateAgent :: [Agent] -> Agent -> (Agent, Movement)
-updateAgent ags a@(Agent Prey   _ _) = moveTowardsType isFood ags a
-updateAgent ags a@(Agent Hunter _ _) = moveTowardsType isPrey ags a
-updateAgent ags a@(Agent Food   _ _) = (a, makeMovement 0 0)  -- TODO Food shouldn't do actions
+updateAgent ags a = case agentType a of
+  Prey   -> moveTowardsType isFood ags a
+  Hunter -> moveTowardsType isPrey ags a
+  Food   -> (a, makeMovement 0 0)
 
 moveTowardsType :: (Agent -> Bool) -> [Agent] -> Agent -> (Agent, Movement)
 moveTowardsType tf ags a = ( nxtA, mv )
