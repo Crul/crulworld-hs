@@ -23,7 +23,13 @@ dependencies:
 - base >= 4.7 && < 5
 
 library:
-  source-dirs: src
+  source-dirs:
+  - src
+  - src/crosscutting
+  - src/agents
+  - src/components
+  - src/actions
+  - src/world
 
 executables:
   crulworld-hs-exe:

@@ -1,6 +1,6 @@
 module Simulation (runSimulation) where
 
-import Agents          (makeFood, makePrey, makeHunter)
+import AgentsFactory   (makeFood, makePrey, makeHunter)
 import World           (World (..), Time)
 import WorldSimulation (updateWorld)
 

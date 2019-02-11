@@ -1,7 +1,9 @@
 module WorldSimulation (updateWorld) where
 
-import Agents   (Agent, Action, getActions, executeAction)
-import World    (World (..), senseAgents)
+import Actions       (Action)
+import ActionsEngine (getActions, executeAction)
+import Agents        (Agent)
+import World         (World(..), senseAgents)
 
 updateWorld :: World -> World
 updateWorld w = w { time = nxtT, agents = nxtAgs }
