@@ -19,7 +19,7 @@ makeMovement x y = Movement $ Vector x y
 getMovTowardsPos :: Position -> Position -> Float -> Movement
 getMovTowardsPos (Position (Vector fromX fromY)) (Position (Vector toX toY)) speed =
   makeMovement x y
-    where
+    where  -- TODO make speed work properly (now it applies to x,y not to the real move)
       x = getMovTowardsPosComp fromX toX speed
       y = getMovTowardsPosComp fromY toY speed
 

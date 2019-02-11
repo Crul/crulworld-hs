@@ -1,19 +1,30 @@
 module WorldSimulation (updateWorld) where
 
-import Geometry (Movement)
-import Agents   (Agent, moveAgent, updateAgent)
+import Agents   (Agent, Action, getActions, executeAction)
 import World    (World (..), senseAgents)
 
 updateWorld :: World -> World
-updateWorld w = w { time = newT, agents = ags }
+updateWorld w = w { time = nxtT, agents = nxtAgs }
   where
-    newT      = succ $ time w
-    agsAndMvs = map (updateWorldAgent w) (agents w)
-    ags       = map moveWorldAgent agsAndMvs
+    nxtT   = succ $ time w
+    nxtAgs = updateAgents $ agents w
 
-updateWorldAgent :: World -> Agent -> (Agent, Movement)
-updateWorldAgent w ag = updateAgent visibleAgs ag
-  where visibleAgs = senseAgents w ag
+updateAgents :: [Agent] -> [Agent]
+updateAgents ags = updateAgentByIdx ags (length ags)  -- is there a better way?
 
-moveWorldAgent :: (Agent, Movement) -> Agent
-moveWorldAgent (ag, mv) = moveAgent ag mv
+updateAgentByIdx :: [Agent] -> Int -> [Agent]
+updateAgentByIdx ags 0 = ags
+updateAgentByIdx ags i = updateAgentByIdx nxtAgs nxtI
+  where
+    nxtI   = i - 1
+    nxtAgs = updateAgent ags (ags!!nxtI)
+  
+updateAgent :: [Agent] -> Agent -> [Agent]
+updateAgent ags ag = executeActions ags $ getAgentActions ags ag
+    
+getAgentActions :: [Agent] -> Agent -> [Action]
+getAgentActions ags ag = getActions ag $ senseAgents ags ag
+
+executeActions :: [Agent] -> [Action] -> [Agent]
+executeActions ags [] = ags
+executeActions ags (ac:acs) = executeActions (executeAction ags ac) acs

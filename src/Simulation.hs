@@ -8,8 +8,8 @@ beginningOfTime = 0
 historySteps    = 9
 initialAgents = [
     makeFood   1 8 8,
-    makePrey   1 0 0,
-    makeHunter 2 4 0
+    makePrey   2 0 0,
+    makeHunter 3 4 0
   ]
 
 initialWorld :: World
