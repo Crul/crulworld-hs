@@ -2,7 +2,10 @@ module Geometry (
   Position, Movement, makePosition, makeMovement, getMovTowardsPos, applyMovement
 ) where
 
-data Vector = Vector {x :: Float, y :: Float} deriving (Eq)
+data Vector = Vector
+  { x :: Float
+  , y :: Float
+  } deriving (Eq)
 
 newtype Position = Position Vector
 

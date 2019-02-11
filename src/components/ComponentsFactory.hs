@@ -1,8 +1,8 @@
 module ComponentsFactory (makePositioned, makeWalker, makeHunter) where
 
+import Geometry   (makePosition)
 import AgentTypes (AgentType)
 import Components (Component(..), Speed)
-import Geometry (makePosition)
 
 makePositioned :: Float -> Float -> Component
 makePositioned x y = Positioned $ makePosition x y

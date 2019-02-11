@@ -1,7 +1,7 @@
 module Simulation (runSimulation) where
 
 import AgentsFactory   (makeFoodAgent, makePreyAgent, makeHunterAgent)
-import World           (World (..), Time)
+import World           (World(..), Time)
 import WorldSimulation (updateWorld)
 
 beginningOfTime = 0

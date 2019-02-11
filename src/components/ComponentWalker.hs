@@ -1,10 +1,10 @@
 module ComponentWalker (getWalkerActions) where
 
-import Geometry (Position, getMovTowardsPos)
-import Agents (Agent)
-import Components (Component(..))
+import Geometry      (Position, getMovTowardsPos)
+import Agents        (Agent)
+import Components    (Component(..))
 import ComponentsFns (getPositioned, getWalker)
-import Actions (Action(..))
+import Actions       (Action(..))
 
 getWalkerActions :: Agent -> Position -> [Action]
 getWalkerActions ag trgtPos = [Move ag mvmt]

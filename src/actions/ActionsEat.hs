@@ -1,8 +1,8 @@
 module ActionsEat (eatAgent) where
 
-import Agents (Agent)
+import Agents     (Agent)
 import Components (Component(..))
-import Actions (Action(..))
+import Actions    (Action(..))
 
 eatAgent :: [Agent] -> Action -> [Agent]
 eatAgent ags (Eat hunter prey) = filter (notIsPrey prey) $ map (eatIfHunter hunter prey) ags

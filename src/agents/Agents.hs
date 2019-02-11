@@ -3,7 +3,11 @@ module Agents (Agent(..), isAgentType, getComponents, setComponents) where
 import AgentTypes (AgentType)
 import Components (Component)
 
-data Agent = Agent { agentType :: AgentType, agentId :: Int, components :: [Component] }
+data Agent = Agent
+  { agentType  :: AgentType
+  , agentId    :: Int
+  , components :: [Component]
+  }
 
 instance Eq Agent where
   x == y = (agentId x) == (agentId y)

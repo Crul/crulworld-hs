@@ -1,3 +1,7 @@
 module AgentTypes (AgentType(..)) where
 
-data AgentType = Prey | Hunter | Food deriving (Eq, Show)
+data AgentType
+  = Prey
+  | Hunter
+  | Food
+  deriving (Eq, Show)
