@@ -1,4 +1,4 @@
-module ComponentsFactory (makePositioned, makeWalker, makeChaser) where
+module ComponentsFactory (makePositioned, makeWalker, makeHunter) where
 
 import AgentTypes (AgentType)
 import Components (Component(..), Speed)
@@ -10,5 +10,5 @@ makePositioned x y = Positioned $ makePosition x y
 makeWalker :: Speed -> Component
 makeWalker s = Walker s
 
-makeChaser :: AgentType -> Component
-makeChaser a = Chaser a
+makeHunter :: AgentType -> Component
+makeHunter a = Hunter a

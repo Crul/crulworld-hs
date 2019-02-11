@@ -1,15 +1,15 @@
 module Simulation (runSimulation) where
 
-import AgentsFactory   (makeFood, makePrey, makeHunter)
+import AgentsFactory   (makeFoodAgent, makePreyAgent, makeHunterAgent)
 import World           (World (..), Time)
 import WorldSimulation (updateWorld)
 
 beginningOfTime = 0
 historySteps    = 9
 initialAgents = [
-    makeFood   1 8 8,
-    makePrey   2 0 0,
-    makeHunter 3 4 0
+    makeFoodAgent   1 9 9,
+    makePreyAgent   2 5 5,
+    makeHunterAgent 3 0 0
   ]
 
 initialWorld :: World

@@ -1,11 +1,12 @@
 module ActionsMove (moveAgent) where
 
+import Geometry (Movement, applyMovement)
 import Agents (Agent(..))
 import Components (Component(..))
-import Geometry (Movement, applyMovement)
+import Actions (Action(..))
 
-moveAgent :: [Agent] -> Agent -> Movement -> [Agent]
-moveAgent ags ag mv = map (moveIfAgent ag mv) ags
+moveAgent :: [Agent] -> Action -> [Agent]
+moveAgent ags (Move ag mv) = map (moveIfAgent ag mv) ags
 
 moveIfAgent :: Agent -> Movement -> Agent -> Agent
 moveIfAgent agToMove mv candidateAg =   -- is there a more efficient way ?

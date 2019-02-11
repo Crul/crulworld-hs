@@ -5,11 +5,11 @@ import AgentTypes (AgentType)
 
 type Speed = Float
 
-data Component = Positioned Position | Walker Speed | Chaser AgentType -- how to express components' dependencies
+data Component = Positioned Position | Walker Speed | Hunter AgentType -- how to express components' dependencies
 instance Show Component where
   show (Positioned p) = show p
   show (Walker sp) = "Walker"
-  show (Chaser at) = "Chaser:" ++ (show at)
+  show (Hunter at) = "Hunter:" ++ (show at)
 
 isPositioned :: Component -> Bool -- is there a better way?
 isPositioned (Positioned _) = True

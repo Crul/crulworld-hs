@@ -1,4 +1,4 @@
-module ComponentChaser (getChaserActions) where
+module ComponentHunter (getHunterActions) where
 
 import AgentTypes (AgentType)
 import Agents (Agent, isAgentType)
@@ -7,8 +7,8 @@ import ComponentsFns (getPositioned)
 import Actions (Action)
 import ComponentWalker (getWalkerActions)
 
-getChaserActions :: [Agent] -> Agent -> AgentType -> [Action]
-getChaserActions targets ag agType = getMoveTowardsFiltered (isAgentType agType) targets ag
+getHunterActions :: [Agent] -> Agent -> Component -> [Action]
+getHunterActions targets ag (Hunter agType) = getMoveTowardsFiltered (isAgentType agType) targets ag
 
 getMoveTowardsFiltered :: (Agent -> Bool) -> [Agent] -> Agent -> [Action]
 getMoveTowardsFiltered tf ags ag = mvs
