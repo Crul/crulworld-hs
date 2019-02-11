@@ -5,6 +5,7 @@ import Components (Component(..))
 import Actions (Action(..))
 import ComponentHunter (getHunterActions)
 import ActionsMove (moveAgent)
+import ActionsEat (eatAgent)
 
 getActions :: Agent -> [Agent] -> [Action]
 getActions ag ags = concat $ map (getComponentActions ags ag) (components ag)
@@ -17,4 +18,5 @@ getComponentActions _ _ _ = []
 -- TODO how to make this more open/close?
 executeAction :: [Agent] -> Action -> [Agent]
 executeAction ags m@(Move ag mv) = moveAgent ags m
-executeAction ags _ = ags
+executeAction ags e@(Eat hunter prey) = eatAgent ags e
+-- executeAction ags _ = ags

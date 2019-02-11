@@ -2,11 +2,15 @@ module Geometry (
   Position, Movement, makePosition, makeMovement, getMovTowardsPos, applyMovement
 ) where
 
-data Vector = Vector {x :: Float, y :: Float}
+data Vector = Vector {x :: Float, y :: Float} deriving (Eq)
 
 newtype Position = Position Vector
+
 instance Show Position where
   show (Position v) = "(" ++ (show $ x v) ++ "," ++ (show $ y v) ++ ")"
+
+instance Eq Position where  -- TODO is there a better way?
+  (Position x) == (Position y) = x == y
 
 newtype Movement = Movement Vector
 
