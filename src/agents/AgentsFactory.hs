@@ -3,7 +3,7 @@ module AgentsFactory (makeFoodAgent, makePreyAgent, makeHunterAgent) where
 import AgentTypes        (AgentType(..))
 import Agents            (Agent(..))
 import Components        (Speed)
-import ComponentsFactory (makePositioned, makeWalker, makeHunter)
+import ComponentsFactory (makePositioned, makeWalking, makeHunting)
 
 agentsSpeed :: Speed
 agentsSpeed = 1.5
@@ -15,13 +15,13 @@ makeFoodAgent id x y = Agent Food id cs
 makePreyAgent :: Int -> Float -> Float -> Agent
 makePreyAgent id x y = Agent Prey id cs
   where cs = [ makePositioned x y
-             , makeWalker agentsSpeed
-             , makeHunter Food
+             , makeWalking agentsSpeed
+             , makeHunting Food
              ]
 
 makeHunterAgent :: Int -> Float -> Float -> Agent
 makeHunterAgent id x y = Agent Hunter id cs
   where cs = [ makePositioned x y
-             , makeWalker agentsSpeed
-             , makeHunter Prey
+             , makeWalking agentsSpeed
+             , makeHunting Prey
              ]

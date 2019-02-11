@@ -1,14 +1,14 @@
-module ComponentHunter (getHunterActions) where
+module ComponentHunting (getHuntingActions) where
 
 import AgentTypes      (AgentType)
 import Agents          (Agent, isAgentType)
 import Components      (Component(..))
 import ComponentsFns   (getPositioned)
 import Actions         (Action(..))
-import ComponentWalker (getWalkerActions)
+import ComponentWalking (getWalkingActions)
 
-getHunterActions :: [Agent] -> Agent -> Component -> [Action]
-getHunterActions targets ag (Hunter agType) = hunt (isAgentType agType) ag targets
+getHuntingActions :: [Agent] -> Agent -> Component -> [Action]
+getHuntingActions targets ag (Hunting agType) = hunt (isAgentType agType) ag targets
 
 hunt :: (Agent -> Bool) -> Agent -> [Agent] -> [Action]
 hunt tf hunter targets = huntPreys hunter preys
@@ -22,4 +22,4 @@ huntPreys hunter (prey:ps) = acts
     (Positioned preyPos) = getPositioned prey
     acts = if huntPos == preyPos
       then [Eat hunter prey]
-      else getWalkerActions hunter preyPos
+      else getWalkingActions hunter preyPos
