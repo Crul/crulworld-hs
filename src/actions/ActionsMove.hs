@@ -8,8 +8,8 @@ import Actions (Action(..))
 moveAgent :: [Agent] -> Action -> [Agent]
 moveAgent ags (Move ag mv) = map (moveIfAgent ag mv) ags
 
-moveIfAgent :: Agent -> Movement -> Agent -> Agent
-moveIfAgent agToMove mv candidateAg =   -- TODO is there a better way?
+moveIfAgent :: Agent -> Movement -> Agent -> Agent  -- TODO is there a better way?
+moveIfAgent agToMove mv candidateAg =  -- TODO DRY ActionsEat
   if agToMove == candidateAg
   then moveAgentComponent candidateAg mv
   else candidateAg

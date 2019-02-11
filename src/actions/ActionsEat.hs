@@ -10,8 +10,8 @@ eatAgent ags (Eat hunter prey) = filter (notIsPrey prey) $ map (eatIfHunter hunt
 notIsPrey :: Agent -> Agent -> Bool  -- TODO is there a better way?
 notIsPrey prey candidateAg = prey /= candidateAg
 
-eatIfHunter :: Agent -> Agent -> Agent -> Agent  -- is there a more efficient way ?
-eatIfHunter hunter prey candidateAg =
+eatIfHunter :: Agent -> Agent -> Agent -> Agent  -- TODO is there a better way?
+eatIfHunter hunter prey candidateAg =  -- TODO DRY ActionsMove
   if hunter == candidateAg
   then eat hunter prey
   else candidateAg

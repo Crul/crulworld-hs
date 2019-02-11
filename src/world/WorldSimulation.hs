@@ -12,7 +12,7 @@ updateWorld w = w { time = nxtT, agents = nxtAgs }
     nxtAgs = updateAgents $ agents w
 
 updateAgents :: [Agent] -> [Agent]
-updateAgents ags = updateAgentByIdx ags (length ags)  -- is there a better way?
+updateAgents ags = updateAgentByIdx ags (length ags)  -- TODO is there a better way?
 
 updateAgentByIdx :: [Agent] -> Int -> [Agent]
 updateAgentByIdx ags 0 = ags

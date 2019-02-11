@@ -1,6 +1,6 @@
 module ComponentsFns (getPositioned, getWalker) where
 
-import Agents (Agent(..)) -- TODO is there a better way to avoid cyclic dependecies with Agent?
+import Agents (Agent(..))  -- TODO is there a better way to avoid cyclic dependecies with Agent?
 import Components (Component(..), isPositioned, isWalker)
 import Geometry (Position)
 
