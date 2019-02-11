@@ -1,5 +1,5 @@
 module Geometry (
-  Position, Movement, makePosition, makeMovement, getMovTowardsPos, applyMovement
+  Vector(..), Position(..), Movement, makePosition, makeMovement, getMovTowardsPos, applyMovement
 ) where
 
 data Vector = Vector
